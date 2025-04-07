@@ -1,0 +1,26 @@
+on:
+    push:
+      tags:
+        - 'v[0-9]+.[0-9]+.[0-9]+'
+jobs:
+    build-push-deploy-docker-image:
+      runs-on: ubuntu-latest
+      name: Build and Deploy ${{ github.ref_name }} ${{ github.event.repository.name }}
+      steps:
+        - name: Get the latest tag
+          id: get_latest_tag
+          run: echo "LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_ENV
+  
+        - uses: devopsprabin/github-action-dev@main
+          with:
+            github_actor: ${{ github.actor }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            ssh_host: ${{ secrets.SSH_HOST_PROD }}
+            ssh_user: ${{ secrets.SSH_USER_PROD }}
+            ssh_port: ${{ secrets.SSH_PORT_PROD }}
+            ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+            deploy_folder_path: ${{ vars.DEPLOY_FOLDER_PATH_PROD }}
+            deploy_command: ${{ vars.DEPLOY_COMMAND_PROD }}
+            discord_webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID_PROD }}
+            discord_webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN_PROD }}
+            custom_tag_name: ${{ env.LATEST_TAG }}
